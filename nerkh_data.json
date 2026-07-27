@@ -1,0 +1,16 @@
+{
+  "api_name": "Nerkh API",
+  "version": "1.0.0",
+  "last_update": "2026-07-27",
+  "currency": "تومان",
+  "prices": {
+    "usd": {
+      "name": "دلار",
+      "price": 190000
+    },
+    "bitcoin": {
+      "name": "بیت کوین",
+      "price": 12405000000
+    }
+  }
+}
