@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>نرخ | Nerkh</title>
+    <!-- فونت پیشرفته وزیرمتن (فارسی + انگلیسی) -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;                /* بدون اسکرول */
+            background: #ffffff;
+            font-family: 'Vazirmatn', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* کارت اصلی با سایز منعطف */
+        .card {
+            background: #ffffff;
+            border-radius: 2.5rem;
+            padding: 2.8rem 3rem 2.5rem;
+            /* سایه طلایی ملایم */
+            box-shadow: 0 20px 40px -8px rgba(212, 175, 55, 0.25),
+                        0 0 0 1px rgba(212, 175, 55, 0.15);
+            width: fit-content;               /* اندازه بر اساس محتوا */
+            max-width: 92vw;                  /* جلوگیری از سرریز در صفحه‌های خیلی کوچک */
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.8rem;
+            margin: 0 auto;
+            overflow: hidden;                 /* اطمینان از عدم خروج محتوا */
+            animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 28px 50px -8px rgba(184, 134, 11, 0.30),
+                        0 0 0 1px rgba(184, 134, 11, 0.2);
+        }
+
+        /* عنوان */
+        .title {
+            font-size: clamp(1.8rem, 6vw, 2.3rem);
+            font-weight: 700;
+            color: #1e1e2f;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        /* هر ردیف قیمت – یک خط کامل، بدون شکست */
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 600;
+            color: #2d2d3f;
+            white-space: nowrap;              /* خط نشکند */
+            flex-wrap: nowrap;                /* قطعاً یک خط */
+            direction: rtl;
+        }
+
+        .price-label {
+            font-size: inherit;
+        }
+
+        /* اعداد به صورت LTR نمایش داده شوند (جهت خواندن اعداد) */
+        .amount {
+            direction: ltr;
+            display: inline-block;
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.2px;
+        }
+
+        .toman {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #6b7280;
+            margin-right: 0.2rem;
+            white-space: nowrap;
+        }
+
+        /* بخش بروزرسانی */
+        .update-section {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            opacity: 0.75;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .update-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .version-text {
+            font-size: 0.68rem;
+            color: #cbd5e1;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <!-- عنوان ثابت -->
+        <div class="title">
+            <span>💰</span> نرخ | Nerkh <span>💰</span>
+        </div>
+
+        <!-- ردیف قیمت دلار (تمام محتوا در یک خط) -->
+        <div class="price-row">
+            <span>💵</span>
+            <span>قیمت دلار:</span>
+            <span id="dollar-value" class="amount">---</span>
+            <span class="toman">تومان</span>
+        </div>
+
+        <!-- ردیف قیمت بیت‌کوین -->
+        <div class="price-row">
+            <span>🪙</span>
+            <span>قیمت بیت‌کوین:</span>
+            <span id="bitcoin-value" class="amount">---</span>
+            <span class="toman">تومان</span>
+        </div>
+
+        <!-- اطلاعات بروزرسانی -->
+        <div class="update-section">
+            <div class="update-text">
+                <span>📆</span> آخرین بروزرسانی:
+                <span id="date-value">در حال دریافت...</span>
+            </div>
+            <div class="version-text">نسخه v1.0.0</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchPrices() {
+            const dollarEl = document.getElementById('dollar-value');
+            const bitcoinEl = document.getElementById('bitcoin-value');
+            const dateEl = document.getElementById('date-value');
+
+            // نمایش وضعیت بارگذاری
+            dollarEl.textContent = '...';
+            bitcoinEl.textContent = '...';
+            dateEl.textContent = 'در حال بارگذاری';
+
+            try {
+                // استفاده از پروکسی CORS برای رفع مشکل دریافت اطلاعات از API
+                // اگر API اصلی از CORS پشتیبانی می‌کند، می‌توانید مستقیماً از آدرس زیر استفاده کنید.
+                const apiUrl = 'https://Nerkh-API.up.Railway.app/prices';
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`خطای شبکه: ${response.status}`);
+                
+                const data = await response.json();
+
+                // فرمت اعداد با جداکننده هزارگان (سبک انگلیسی برای نمایش LTR)
+                const dollarFormatted = Number(data.dollar).toLocaleString('en-US');
+                const bitcoinFormatted = Number(data.bitcoin).toLocaleString('en-US');
+
+                dollarEl.textContent = dollarFormatted;
+                bitcoinEl.textContent = bitcoinFormatted;
+
+                // تاریخ بروزرسانی
+                dateEl.textContent = data.update_date || 'نامشخص';
+            } catch (error) {
+                console.error('خطا در دریافت نرخ‌ها:', error);
+                dollarEl.textContent = 'خطا';
+                bitcoinEl.textContent = 'خطا';
+                dateEl.textContent = 'دریافت نشد';
+                
+                // تغییر ملایم رنگ سایه برای نشان دادن خطا
+                const card = document.querySelector('.card');
+                if (card) {
+                    card.style.boxShadow = '0 20px 40px -8px rgba(220, 38, 38, 0.2), 0 0 0 1px rgba(220, 38, 38, 0.15)';
+                }
+            }
+        }
+
+        // دریافت اطلاعات در اولین بارگذاری
+        fetchPrices();
+
+        // بروزرسانی خودکار هر ۱۰ ثانیه
+        setInterval(fetchPrices, 10000);
+    </script>
+</body>
+  </html>
