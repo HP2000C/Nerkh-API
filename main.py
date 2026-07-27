@@ -1,10 +1,17 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import json
 
 app = FastAPI(
     title="Nerkh API",
-    description="API نرخ قیمت‌ها",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # خواندن اطلاعات قیمت‌ها
